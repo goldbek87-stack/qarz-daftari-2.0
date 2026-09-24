@@ -16,7 +16,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Doimiy imzo: har bir yangi APK eskisining ustidan o'rnatiladi (ma'lumot saqlanib qoladi)
+    signingConfigs {
+        qarz {
+            storeFile file('qarz-imzo.jks')
+            storePassword 'qarzdaftari'
+            keyAlias 'qarz'
+            keyPassword 'qarzdaftari'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.qarz
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
