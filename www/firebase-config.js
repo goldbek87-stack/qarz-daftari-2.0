@@ -1,11 +1,9 @@
-// Firebase sozlamasi.
-// Firebase saytida "Add app → Web" qilganda chiqadigan  const firebaseConfig = { ... };  matnini
-// shu fayldagi namunaning O'RNIGA to'liq joylang. "SHU_YERGA" qolsa, ilova bulutsiz (faqat telefonda) ishlaydi.
+// Firebase sozlamasi — loyiha: qarz-daftari-ddb56
 const firebaseConfig = {
-  apiKey: "SHU_YERGA",
-  authDomain: "SHU_YERGA",
-  projectId: "SHU_YERGA",
-  storageBucket: "SHU_YERGA",
-  messagingSenderId: "SHU_YERGA",
-  appId: "SHU_YERGA"
+  apiKey: "AIzaSyC7Txj58UUrAU9N2T8RgPMR8-ggv5DQ7XE",
+  authDomain: "qarz-daftari-ddb56.firebaseapp.com",
+  projectId: "qarz-daftari-ddb56",
+  storageBucket: "qarz-daftari-ddb56.firebasestorage.app",
+  messagingSenderId: "262775158223",
+  appId: "1:262775158223:web:b0cdea817ebaf943de8eba"
 };
