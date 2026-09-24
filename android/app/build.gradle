@@ -4,7 +4,7 @@ android {
     namespace = "uz.qarzdaftar.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "uz.qarzdaftar.app"
+        applicationId "uz.qarzdaftar.app2"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
