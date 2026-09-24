@@ -1,0 +1,11 @@
+{
+  "appId": "uz.qarzdaftar.app",
+  "appName": "Qarz Daftari",
+  "webDir": "www",
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_qarz",
+      "iconColor": "#C23B2A"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Har bir hisob faqat O'Z ma'lumotini o'qiydi va yozadi. Boshqa hisobning ma'lumotiga kirib bo'lmaydi.
+    match /users/{uid}/{collection}/{docId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == uid
+                         && collection in ['clients', 'entries'];
+    }
+  }
+}

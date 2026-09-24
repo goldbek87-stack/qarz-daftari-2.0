@@ -1,0 +1,43 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodni olish
+        uses: actions/checkout@v4
+
+      - name: Java'ni sozlash
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Node.js'ni sozlash
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Bog'liqliklarni o'rnatish
+        run: npm install --legacy-peer-deps
+
+      - name: Web fayllarni Android loyihasiga sinxronlash
+        run: npx cap sync android
+
+      - name: Gradle wrapper'ga ruxsat berish
+        run: chmod +x android/gradlew
+
+      - name: APK'ni qurish (debug)
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Tayyor APK'ni saqlash
+        uses: actions/upload-artifact@v4
+        with:
+          name: qarz-daftari-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
