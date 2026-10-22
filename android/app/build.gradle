@@ -4,7 +4,7 @@ android {
     namespace = "uz.qarzdaftar.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "uz.qarzdaftar.app2"
+        applicationId "uz.qarzdaftarim"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -18,6 +18,14 @@ android {
     }
     // Doimiy imzo: har bir yangi APK eskisining ustidan o'rnatiladi (ma'lumot saqlanib qoladi)
     signingConfigs {
+        upload {
+            if (System.getenv("KEYSTORE_PATH")) {
+                storeFile file(System.getenv("KEYSTORE_PATH"))
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
+            }
+        }
         qarz {
             storeFile file('qarz-imzo.jks')
             storePassword 'qarzdaftari'
@@ -30,6 +38,9 @@ android {
             signingConfig signingConfigs.qarz
         }
         release {
+            if (System.getenv("KEYSTORE_PATH")) {
+                signingConfig signingConfigs.upload
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
