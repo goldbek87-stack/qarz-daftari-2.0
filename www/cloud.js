@@ -78,6 +78,26 @@
         await F.updatePassword(u, newP);
       },
       resetPassword: (email) => F.sendPasswordResetEmail(auth, email),
+      // Hisobni va bulutdagi BARCHA ma'lumotni o'chirish (Google Play talabi)
+      async deleteAccount(uid, pass) {
+        const u = auth.currentUser;
+        if (!u || u.uid !== uid) throw new Error('Hisob topilmadi');
+        await F.reauthenticateWithCredential(u, F.EmailAuthProvider.credential(u.email, pass));
+        for (const col of COLS) {
+          const s = await F.getDocs(F.collection(db, 'users', uid, col));
+          for (let i = 0; i < s.docs.length; i += 400) {
+            const b = F.writeBatch(db);
+            s.docs.slice(i, i + 400).forEach(d => b.delete(d.ref));
+            await b.commit();
+          }
+        }
+        const token = await u.getIdToken(true);
+        const r = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:delete?key=' + encodeURIComponent(firebaseConfig.apiKey), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: token })
+        });
+        if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error((j.error && j.error.message) || 'Hisobni o\'chirib bo\'lmadi'); }
+        try { await F.signOut(auth); } catch (e) {}
+      },
       // faqat "since" dan keyin o'zgargan hujjatlar
       listen(uid, col, sinceMs, cb, onErr) {
         const q = F.query(F.collection(db, 'users', uid, col), F.where('updated', '>', F.Timestamp.fromMillis(Math.max(0, sinceMs))));
@@ -274,7 +294,7 @@
       box.innerHTML = '<b>☁️ Hisob: ' + esc(user.login) + '</b><p class="note" id="cloudState"></p>' +
         '<p class="note">Shu login va parol bilan boshqa telefondan kirsangiz, o\'sha daftar ochiladi.</p>' +
         '<div class="micline" style="margin-top:10px"><button class="btn light" id="clTrash">🗑 O\'chirilganlar</button><button class="btn light" id="clPass">🔑 Parol</button></div>' +
-        '<div class="micline" style="margin-top:10px"><button class="btn light" id="clOut">Chiqish</button></div>';
+        '<div class="micline" style="margin-top:10px"><button class="btn light" id="clOut">Chiqish</button><button class="btn light" id="clDel">❌ Hisobni o\'chirish</button></div>';
     } else {
       box.innerHTML = '<b>☁️ Bulut</b><p class="note">Hozir hisobsiz ishlayapsiz — ma\'lumot faqat shu telefonda.</p>' +
         '<div class="micline" style="margin-top:10px"><button class="btn" id="clIn">Kirish / Ro\'yxatdan o\'tish</button></div>';
@@ -291,6 +311,7 @@
       await B.signOut();
     }
     if (id === 'clPass') changePass();
+    if (id === 'clDel') deleteAcc();
     if (id === 'clTrash') openTrash();
     const rs = e.target.closest && e.target.closest('[data-restore]');
     if (rs) restore(rs.dataset.col, rs.dataset.restore);
@@ -303,6 +324,20 @@
     if (prompt('Yangi parolni takrorlang:') !== newP) return H.toast('Parollar bir xil emas', 3000);
     try { await B.changePassword(oldP, newP); alert("Parol o'zgartirildi. Shu loginga kiradigan boshqa telefonlar ham yangi parol bilan qayta kirishi kerak bo'ladi."); }
     catch (e) { H.toast(errText(e), 4000); }
+  }
+  async function deleteAcc() {
+    if (!B || !B.deleteAccount || !user) return;
+    if (navigator.onLine === false) return H.toast("Hisobni o'chirish uchun internet kerak", 4000);
+    if (!confirm("DIQQAT! Hisob va bulutdagi BARCHA ma'lumotlar (mijozlar, qarzlar, to'lovlar) butunlay o'chadi va qaytarib bo'lmaydi.\n\nDavom etilsinmi?")) return;
+    const pass = prompt('Tasdiqlash uchun hisob parolini kiriting:'); if (!pass) return;
+    if (!confirm('Oxirgi ogohlantirish: "' + user.login + '" hisobi va uning hamma ma\'lumoti o\'chiriladi. Ishonchingiz komilmi?')) return;
+    const uid = user.uid;
+    try {
+      H.toast("O'chirilmoqda... kuting", 15000);
+      await B.deleteAccount(uid, pass);
+      H.dropStorage('u_' + uid); LS.del(K.since(uid));
+      alert("Hisob va barcha ma'lumotlar o'chirildi.");
+    } catch (e) { H.toast(errText(e), 5000); }
   }
   let trash = { clients: [], entries: [] };
   async function openTrash() {
